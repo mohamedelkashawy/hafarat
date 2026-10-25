@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12355b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>تصفيات الحفارات</title>
+<style>
+:root{--navy:#12355b;--gold:#c8942c;--bg:#eef2f7;--card:#fff;--line:#d3dce8;--ok:#1b7f4b;--warn:#b26a00;--bad:#b3261e;--mut:#5f6b7a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);font-family:Tahoma,"Segoe UI",Arial,sans-serif;color:#1b2430;font-size:17px}
+header{position:sticky;top:0;z-index:5;background:linear-gradient(135deg,#0f2f52,#1f5d8f);color:#fff;padding:12px 14px calc(10px);
+  border-bottom:4px solid var(--gold);display:flex;align-items:center;justify-content:space-between;gap:10px}
+header h1{font-size:19px;margin:0}
+#badge{font-size:13px;background:rgba(255,255,255,.16);padding:5px 10px;border-radius:99px;white-space:nowrap}
+#badge.pend{background:#ffe0a3;color:#6b4300}
+nav{display:flex;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:57px;z-index:4}
+nav button{flex:1;border:0;background:none;padding:13px 4px;font:inherit;font-size:15px;color:var(--mut);border-bottom:3px solid transparent}
+nav button.on{color:var(--navy);font-weight:bold;border-bottom-color:var(--gold)}
+main{padding:14px;max-width:520px;margin:0 auto;padding-bottom:90px}
+.card{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(18,53,91,.1);margin-bottom:14px}
+label{display:block;font-size:14px;color:var(--mut);margin:12px 0 5px}
+label:first-child{margin-top:0}
+input,select{width:100%;font:inherit;padding:13px 12px;border:1.5px solid var(--line);border-radius:11px;background:#fff;color:#1b2430;
+  min-height:50px;text-align:right}
+input:focus,select:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(18,53,91,.15)}
+input[type=date]{text-align:center}
+.row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.big{width:100%;margin-top:16px;border:0;border-radius:13px;background:var(--navy);color:#fff;font:inherit;font-weight:bold;font-size:18px;padding:15px;min-height:54px}
+.big:active{transform:scale(.99);background:#0e2a49}
+.ghost{background:none;border:1.5px solid var(--line);color:var(--navy);padding:9px 14px;border-radius:10px;font:inherit;font-size:14px}
+.hint{font-size:13px;color:var(--mut);margin-top:6px;line-height:1.6}
+#toast{position:fixed;left:12px;right:12px;bottom:calc(16px + env(safe-area-inset-bottom));max-width:496px;margin:0 auto;padding:14px;border-radius:12px;
+  color:#fff;text-align:center;font-size:16px;opacity:0;transform:translateY(20px);transition:.25s;pointer-events:none;z-index:20}
+#toast.show{opacity:1;transform:none}
+#toast.ok{background:var(--ok)} #toast.err{background:var(--bad)}
+.item{border-bottom:1px solid var(--line);padding:11px 2px;display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.item:last-child{border-bottom:0}
+.item .t{font-weight:bold;font-size:15px}
+.item .s{font-size:13.5px;color:var(--mut);margin-top:3px;line-height:1.6}
+.tag{font-size:12.5px;padding:3px 9px;border-radius:99px;white-space:nowrap;background:#e8eef6;color:var(--navy)}
+.tag.done{background:#dff3e8;color:var(--ok)} .tag.pending{background:#fff0d1;color:var(--warn)}
+.tag.rejected{background:#fbe0de;color:var(--bad)} .tag.local{background:#e3e7ec;color:#333}
+.x{border:0;background:none;color:var(--bad);font-size:20px;padding:4px 8px}
+.empty{text-align:center;color:var(--mut);padding:24px 8px;font-size:15px}
+
+nav button{font-size:13px;padding:12px 2px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.kpi{background:#fff;border-radius:12px;padding:10px 6px;text-align:center;box-shadow:0 1px 4px rgba(18,53,91,.1)}
+.kpi span{display:block;font-size:12px;color:var(--mut)}
+.kpi b{display:block;font-size:17px;color:var(--navy);direction:ltr;unicode-bidi:isolate;margin-top:2px}
+.kpi.hi{background:var(--navy)} .kpi.hi span{color:#cfe0f3} .kpi.hi b{color:#ffd77a}
+.kpi.neg{background:#a61e1e} .kpi.neg span{color:#ffd9d6} .kpi.neg b{color:#fff}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.actions button{border:0;border-radius:12px;padding:13px 6px;font:inherit;font-size:15px;font-weight:bold;min-height:50px;background:var(--navy);color:#fff}
+.actions button.wa{background:#1b7f4b}
+.actions button.alt{background:#fff;color:var(--navy);border:1.5px solid var(--line)}
+.prev{background:#dfe5ec;border-radius:10px;overflow:hidden;position:relative;margin-bottom:14px;min-height:80px;direction:ltr}
+.prev iframe{border:0;background:#dfe5ec;display:block}
+.note{background:#fff0d1;color:#6b4300;border-radius:10px;padding:9px 12px;font-size:13.5px;margin-bottom:12px;line-height:1.6}
+.note.info{background:#e3eefb;color:#12355b}
+details{background:#fff;border-radius:12px;padding:4px 12px;margin-bottom:12px;box-shadow:0 1px 4px rgba(18,53,91,.1)}
+summary{padding:10px 0;font-weight:bold;color:var(--navy);font-size:15px}
+.mini{border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:6px 10px;font:inherit;font-size:14px}
+.mini.del{color:var(--bad)}
+.ln{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding:9px 0}
+.ln:last-child{border-bottom:0}
+.ln .tx{font-size:14px;line-height:1.55;flex:1} .ln .tx small{color:var(--mut);display:block}
+.ln.gone .tx{text-decoration:line-through;opacity:.55}
+h3{margin:0 0 8px;font-size:16px;color:var(--navy)}
+.linkbtn{background:none;border:0;color:var(--navy);text-decoration:underline;font:inherit;font-size:14px;padding:8px 0}
+#setup{display:none}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1>🚜 تصفيات الحفارات</h1>
+  <span id="badge">...</span>
+</header>
+
+<main id="setup">
+  <div class="card">
+    <h2 style="margin:0 0 6px;font-size:18px">أول مرة؟ اكتب مفتاح الدخول</h2>
+    <div class="hint">نفس المفتاح اللي كتبته في Code.gs وفي برنامج الكمبيوتر. هيتحفظ على التليفون ومش هتكتبه تاني.</div>
+    <div id="urlWrap" style="display:none"><label for="urlIn">رابط السيرفر (اللي بينتهي بـ /exec)</label>
+    <input id="urlIn" type="url" autocomplete="off" dir="ltr" style="text-align:left" placeholder="https://script.google.com/macros/s/.../exec"></div>
+    <label for="keyIn">المفتاح</label>
+    <input id="keyIn" type="password" autocomplete="off" dir="ltr" style="text-align:left">
+    <button class="big" id="keyGo">دخول</button>
+  </div>
+</main>
+
+<div id="app" class="hide">
+<nav>
+  <button data-tab="acc" class="on">📊 الحسابات</button>
+  <button data-tab="day">⏱ يوم</button>
+  <button data-tab="ent">💵 بند</button>
+  <button data-tab="mine">📋 سجلي <span id="nPend"></span></button>
+  <button data-tab="exc">⚙ حفارات</button>
+</nav>
+
+<main>
+  <section id="tab-acc">
+    <div class="card">
+      <label for="aView">التقرير</label>
+      <select id="aView">
+        <option value="month">📅 شهري شامل (ورقة A4)</option>
+        <option value="detail">📚 كشف حساب تفصيلي (كل الشهور + الملخص النهائي)</option>
+        <option value="summ">👥 ملخص كل الحفارات للشهر</option>
+        <option value="months">🗓 ملخص الشهور — كل الشركة</option>
+      </select>
+      <div class="row2">
+        <div id="aExcW"><label for="aExc">الحفار</label><select id="aExc"></select></div>
+        <div id="aMonW"><label for="aMon">الشهر</label><select id="aMon"></select></div>
+      </div>
+      <div class="hint" id="aAt"></div>
+    </div>
+    <div id="stale"></div>
+    <div id="aBody" class="hide">
+      <div class="kpis" id="aKpis"></div>
+      <div class="actions">
+        <button class="wa" id="bWa">📲 واتساب</button>
+        <button id="bPrint">🖨 PDF / طباعة</button>
+        <button class="alt" id="bCopy">📋 نسخ النص</button>
+        <button class="alt" id="bOpen">🔗 فتح الصفحة</button>
+      </div>
+      <div class="prev" id="prevWrap"><iframe id="prev" title="التقرير"></iframe></div>
+      <div id="aLists"></div>
+    </div>
+    <div id="aEmpty" class="empty hide">الحسابات لسه ما وصلتش التليفون.<br>افتح البرنامج على الكمبيوتر مرة (وزرار «📱 الموبايل») وبعدين اضغط تحديث.</div>
+    <button class="ghost" id="aRefresh" style="width:100%;margin-bottom:14px">🔄 تحديث الحسابات</button>
+  </section>
+
+  <section id="tab-day" class="hide">
+    <div class="card">
+      <label for="dExc">الحفار</label><select id="dExc"></select>
+      <label for="dDate">التاريخ</label><input id="dDate" type="date">
+      <div class="row">
+        <div><label for="dDay">نهار</label><input id="dDay" inputmode="decimal" placeholder="0"></div>
+        <div><label for="dNight">ليل</label><input id="dNight" inputmode="decimal" placeholder="0"></div>
+        <div><label for="dDiesel">سولار</label><input id="dDiesel" inputmode="decimal" placeholder="0"></div>
+      </div>
+      <label for="dNote">ملاحظة (اختياري)</label><input id="dNote" placeholder="مثلًا: عطل بسيط">
+      <button class="big" id="saveDay">حفظ اليوم</button>
+      <div class="hint">لو سجّلت نفس اليوم تاني، القيم الجديدة هي اللي هتتحفظ في البرنامج.</div>
+    </div>
+  </section>
+
+  <section id="tab-ent" class="hide">
+    <div class="card">
+      <label for="eExc">الحفار</label><select id="eExc"></select>
+      <label for="eDate">التاريخ</label><input id="eDate" type="date">
+      <label for="eDesc">البيان</label><input id="eDesc" list="descs" placeholder="مثلًا: عهدة سائق" autocomplete="off">
+      <datalist id="descs"></datalist>
+      <label for="eAmt">المبلغ</label><input id="eAmt" inputmode="decimal" placeholder="0">
+      <label for="eNote">ملاحظة (اختياري)</label><input id="eNote">
+      <div id="editBar" class="note info hide">✏️ بتعدّل بند موجود <button class="linkbtn" id="cancelEdit">إلغاء التعديل</button></div>
+      <button class="big" id="saveEnt">حفظ البند</button>
+      <div class="hint">للخصم اكتب المبلغ بالسالب (مثلًا ‎-700‎).</div>
+    </div>
+  </section>
+
+  <section id="tab-mine" class="hide">
+    <div class="card" id="mineBox"><div class="empty">...</div></div>
+    <button class="ghost" id="refresh" style="width:100%">🔄 تحديث</button>
+  </section>
+
+  <section id="tab-exc" class="hide">
+    <div class="card"><h3>الحفارات</h3><div id="excList"></div></div>
+    <div class="card">
+      <h3 id="excFormT">➕ حفار جديد</h3>
+      <label for="xName">اسم الحفار</label><input id="xName">
+      <label for="xDriver">السائق</label><input id="xDriver">
+      <label for="xPrice">السعر الشهري</label><input id="xPrice" inputmode="decimal">
+      <div class="row2">
+        <div><label for="xDiv">القسمة (أيام)</label><input id="xDiv" inputmode="decimal" value="26"></div>
+        <div><label for="xHpd">ساعات اليوم</label><input id="xHpd" inputmode="decimal" value="8"></div>
+      </div>
+      <label for="xNote">ملاحظة</label><input id="xNote">
+      <button class="big" id="saveExc">حفظ الحفار</button>
+      <button class="linkbtn hide" id="cancelExc">إلغاء التعديل</button>
+      <div class="hint">تعديل السعر هنا بيسري على الشهور الجديدة. الشهور اللي اتسجلت قبل كده بتفضل بسعرها — غيّرها من «سعر شهر معيّن» تحت.</div>
+    </div>
+    <div class="card">
+      <h3>💲 سعر شهر معيّن</h3>
+      <label for="tExc">الحفار</label><select id="tExc"></select>
+      <label for="tMon">الشهر</label><input id="tMon" type="month">
+      <label for="tPrice">السعر الشهري</label><input id="tPrice" inputmode="decimal">
+      <div class="row2">
+        <div><label for="tDiv">القسمة</label><input id="tDiv" inputmode="decimal" value="26"></div>
+        <div><label for="tHpd">ساعات اليوم</label><input id="tHpd" inputmode="decimal" value="8"></div>
+      </div>
+      <button class="big" id="saveTerms">حفظ سعر الشهر</button>
+    </div>
+    <div class="hint" style="text-align:center">حذف حفار كامل والنسخ الاحتياطي واستعادته وتصدير Excel بيتعملوا من برنامج الكمبيوتر بس (عشان الأمان).</div>
+  </section>
+</main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (s) => document.querySelector(s);
+  const LS = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  };
+  let KEY = LS.get('key', '');
+  const STANDALONE = !(window.google && google.script && google.script.run);
+  if (STANDALONE && !window.RELAY_URL) window.RELAY_URL = LS.get('relayUrl', '');
+  let meta = LS.get('meta', { excavators: [], descriptions: [] });
+  let queue = LS.get('queue', []);
+  let mine = LS.get('mine', []);
+  let snap = null, cur = null, flushing = false, editEnt = null, editExc = null;
+
+  // ---------- أدوات
+  function num(s) {
+    s = String(s == null ? '' : s).trim();
+    s = s.replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace('٫', '.').replace(/[٬,،\s]/g, '');
+    if (s === '') return null;
+    const v = Number(s);
+    return isFinite(v) ? v : NaN;
+  }
+  const uid = () => (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  function today() { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); }
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function fm(v) {
+    v = Number(v) || 0;
+    return Math.abs(v - Math.round(v)) < 0.005 ? Math.round(v).toLocaleString('en-US') : v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  let tt;
+  function toast(msg, kind) {
+    const t = $('#toast'); t.textContent = msg; t.className = 'show ' + (kind || 'ok');
+    clearTimeout(tt); tt = setTimeout(() => { t.className = kind || 'ok'; }, 2800);
+  }
+
+  // ---------- الاتصال: google.script.run لو الصفحة شغالة من Apps Script، وإلا fetch على RELAY_URL
+  function call(req) {
+    req.key = KEY;
+    const s = JSON.stringify(req);
+    return new Promise((res, rej) => {
+      if (window.google && google.script && google.script.run) {
+        google.script.run.withSuccessHandler((r) => { try { res(JSON.parse(r)); } catch (e) { rej(e); } })
+          .withFailureHandler((e) => rej(e)).api(s);
+      } else if (window.RELAY_URL) {
+        fetch(window.RELAY_URL, { method: 'POST', body: s }).then((r) => r.json()).then(res, rej);
+      } else { rej(new Error('no transport')); }
+    });
+  }
+
+  // ---------- الحسابات (نسخة بيرفعها برنامج الكمبيوتر)
+  async function inflate(b64) {
+    if (!window.DecompressionStream) throw new Error('browser');
+    const bin = atob(b64), u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return await new Response(new Blob([u8]).stream().pipeThrough(new DecompressionStream('deflate'))).text();
+  }
+  async function loadCached() {
+    const b = LS.get('snapB64', '');
+    if (!b) return;
+    try { snap = JSON.parse(await inflate(b)); } catch (e) { snap = null; }
+  }
+  async function loadSnap(manual) {
+    try {
+      const r = await call({ action: 'snap_get', have: snap ? LS.get('snapGen', '') : '' });
+      if (r.ok && r.data) {
+        snap = JSON.parse(await inflate(r.data));
+        LS.set('snapB64', r.data); LS.set('snapGen', r.gen); LS.set('snapAt', r.at);
+        if (manual) toast('اتحدّثت الحسابات ✔');
+      } else if (r.ok && r.same) { LS.set('snapAt', r.at); if (manual) toast('الحسابات آخر نسخة ✔'); }
+      else if (!r.ok && r.error) { if (/المفتاح/.test(r.error)) needKey(r.error); else if (manual) toast(r.error, 'err'); }
+    } catch (e) {
+      if (manual) toast(String(e && e.message) === 'browser' ? 'المتصفح قديم — حدّثه لعرض الحسابات' : 'مفيش اتصال دلوقتي', 'err');
+    }
+    fillExc(); renderAcc(); renderExcTab();
+  }
+
+  // ---------- الحالة العامة
+  function badge() {
+    const b = $('#badge'), n = queue.length;
+    if (n) { b.textContent = '⏳ ' + n + ' لسه ما اترفعش'; b.className = 'pend'; }
+    else { b.textContent = navigator.onLine === false ? '📴 أوفلاين' : '● متصل'; b.className = ''; }
+    $('#nPend').textContent = n ? '(' + n + ')' : '';
+  }
+  const excNames = () => snap ? snap.excs.map((e) => e.name) : meta.excavators;
+  function fillSel(id, names, empty) {
+    const sel = $(id), cur0 = sel.value || LS.get('lastExc', '');
+    sel.innerHTML = names.length ? names.map((n) => '<option>' + esc(n) + '</option>').join('') : '<option value="">' + empty + '</option>';
+    if (cur0 && names.indexOf(cur0) >= 0) sel.value = cur0;
+  }
+  function fillExc() {
+    const names = excNames(), e0 = '— افتح البرنامج على الكمبيوتر مرة لتحديث الحفارات —';
+    ['#dExc', '#eExc', '#aExc', '#tExc'].forEach((id) => fillSel(id, names, e0));
+    const ds = (snap && snap.descriptions) || meta.descriptions || [];
+    $('#descs').innerHTML = ds.map((d) => '<option value="' + esc(d) + '">').join('');
+  }
+  async function loadMeta() {
+    try {
+      const r = await call({ action: 'meta' });
+      if (r.ok) { meta = r.meta; LS.set('meta', meta); fillExc(); }
+      else if (r.error && /المفتاح/.test(r.error)) needKey(r.error);
+    } catch (e) { /* أوفلاين */ }
+  }
+
+  // ---------- الإرسال (طابور محلي: مفيش حاجة بتضيع لو النت قطع)
+  async function flush() {
+    if (flushing || !queue.length || !KEY) return;
+    flushing = true;
+    try {
+      const r = await call({ action: 'submit', items: queue });
+      if (r.ok) {
+        const got = {}; (r.received || []).forEach((u) => { got[u] = 1; });
+        // اللي اترفع يفضل ظاهر كـ «مستني الكمبيوتر» لحد ما يتنفّذ
+        queue.filter((i) => got[i.uid]).forEach((i) => { mine.unshift(Object.assign({}, i, { status: 'pending', reason: '' })); });
+        mine = mine.slice(0, 60); LS.set('mine', mine);
+        queue = queue.filter((i) => !got[i.uid]); LS.set('queue', queue);
+        if (r.received && r.received.length) toast('✔ اترفع للسيرفر — هيتنفّذ لما الكمبيوتر يفتح');
+      } else if (/المفتاح/.test(r.error || '')) needKey(r.error);
+    } catch (e) { /* هنحاول تاني */ }
+    flushing = false; badge(); renderAcc();
+    if (!$('#tab-mine').classList.contains('hide')) loadMine();
+  }
+  function enqueue(it) {
+    it.uid = uid(); it.created = new Date().toISOString();
+    queue.push(it); LS.set('queue', queue); badge(); flush(); renderAcc();
+  }
+
+  // ---------- العمليات المعلّقة (لسه ما اتنفّذتش على الكمبيوتر)
+  function pj(x) { try { return typeof x === 'string' ? JSON.parse(x || '{}') : (x || {}); } catch (e) { return {}; } }
+  function ops() {
+    return queue.concat(mine.filter((m) => m.status === 'pending')).map((o) => ({ type: o.type, exc: o.exc, date: o.date, data: pj(o.data) }));
+  }
+
+  // ---------- تبويب الحسابات
+  function opt(sel, items, keep) {
+    const el = $(sel), old = keep && el.value;
+    el.innerHTML = items.map((x) => '<option value="' + esc(x[0]) + '">' + esc(x[1]) + '</option>').join('');
+    if (old && items.some((x) => x[0] === old)) el.value = old; else if (items.length) el.value = items[items.length - 1][0];
+  }
+  function docOf(body) {
+    return '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><style>' + snap.css + '</style></head><body>' + body + '</body></html>';
+  }
+  function showPreview(body) {
+    const wrap = $('#prevWrap'), f = $('#prev'), cw = wrap.clientWidth;
+    if (!cw) return;
+    const sc = cw / 794;
+    f.style.width = '794px'; f.style.transformOrigin = '0 0'; f.style.transform = 'scale(' + sc + ')';
+    f.style.height = '1123px'; wrap.style.height = (1123 * sc) + 'px';
+    f.onload = () => { try { const h = f.contentDocument.documentElement.scrollHeight; f.style.height = h + 'px'; wrap.style.height = (h * sc) + 'px'; } catch (e) {} };
+    f.srcdoc = docOf(body);
+  }
+  function kpis(t) {
+    const neg = t.net < -0.5;
+    return '<div class="kpi"><span>الشغل</span><b>' + fm(t.work) + '</b></div><div class="kpi"><span>الواصل</span><b>' + fm(t.received) + '</b></div>' +
+      '<div class="kpi ' + (neg ? 'neg' : 'hi') + '"><span>الصافي</span><b>' + fm(t.net) + '</b></div>';
+  }
+  function renderAcc() {
+    const body = $('#aBody'), empty = $('#aEmpty');
+    if (!snap) { body.classList.add('hide'); empty.classList.remove('hide'); $('#aAt').textContent = ''; return; }
+    empty.classList.add('hide');
+    const v = $('#aView').value;
+    $('#aExcW').classList.toggle('hide', !(v === 'month' || v === 'detail'));
+    $('#aMonW').classList.toggle('hide', !(v === 'month' || v === 'summ'));
+    const at = LS.get('snapAt', '');
+    $('#aAt').textContent = at ? 'آخر تحديث للحسابات من الكمبيوتر: ' + at : '';
+    const pend = ops().length;
+    $('#stale').innerHTML = pend ? '<div class="note">⚠ فيه ' + pend + ' عملية لسه ما اتنفّذتش على الكمبيوتر — مش داخلة في الأرقام دي لحد ما يفتح.</div>' : '';
+    const ex = snap.excs.find((e) => e.name === $('#aExc').value);
+    if (v === 'month') {
+      opt('#aMon', ex ? ex.months.map((m) => [m.m, m.label]) : [], true);
+    } else if (v === 'summ') {
+      opt('#aMon', Object.keys(snap.summ).sort().map((m) => [m, snap.summ[m].label]), true);
+    }
+    let html = null, wa = '', tot = null, ms = null;
+    if (v === 'month' && ex) { ms = ex.months.find((m) => m.m === $('#aMon').value); if (ms) { html = ms.html; wa = ms.wa; tot = ms.s; } }
+    else if (v === 'detail' && ex && ex.months.length) { html = ex.months.map((m) => m.html).join('') + ex.final; wa = ex.wa_all; tot = ex.tot; }
+    else if (v === 'summ') { const s = snap.summ[$('#aMon').value]; if (s) { html = s.html; wa = s.wa; tot = s.tot; } }
+    else if (v === 'months') { if (snap.months.tot) { html = snap.months.html; wa = snap.months.wa; tot = snap.months.tot; } }
+    if (!html) {
+      body.classList.remove('hide'); $('#aKpis').innerHTML = '';
+      $('#prevWrap').style.display = 'none'; $('#aLists').innerHTML = '<div class="empty">مفيش بيانات للاختيار ده لسه</div>';
+      document.querySelector('.actions').style.display = 'none'; cur = null; return;
+    }
+    document.querySelector('.actions').style.display = ''; $('#prevWrap').style.display = '';
+    body.classList.remove('hide');
+    cur = { html: html, wa: wa, ex: ex, ms: ms, v: v };
+    $('#aKpis').innerHTML = kpis(tot);
+    showPreview(html);
+    renderLists();
+  }
+  function renderLists() {
+    const box = $('#aLists');
+    if (!cur || cur.v !== 'month' || !cur.ms) { box.innerHTML = ''; return; }
+    const o = ops(), ex = cur.ex, ms = cur.ms;
+    const gone = (id) => o.some((x) => x.type === 'del_entry' && x.data.entry_id == id);
+    const goneD = (d) => o.some((x) => x.type === 'del_day' && x.exc === ex.name && x.date === d);
+    const ents = ms.ents.map((e) => '<div class="ln ' + (gone(e[0]) ? 'gone' : '') + '"><div class="tx">' + esc(e[2]) + '<small>' + esc(e[1] || 'من غير تاريخ') + ' · ' + fm(e[3]) + (e[4] ? ' · ' + esc(e[4]) : '') + '</small></div>' +
+      (gone(e[0]) ? '<span class="tag pending">⏳ هيتحذف</span>' : '<button class="mini" data-ee="' + e[0] + '">✏️</button><button class="mini del" data-de="' + e[0] + '">🗑</button>') + '</div>').join('');
+    const days = ms.days.map((d) => {
+      const p = []; if (d[1] != null) p.push('نهار ' + d[1]); if (d[2] != null) p.push('ليل ' + d[2]); if (d[3] != null) p.push('سولار ' + d[3]); if (d[4]) p.push(esc(d[4]));
+      return '<div class="ln ' + (goneD(d[0]) ? 'gone' : '') + '"><div class="tx">' + esc(d[0]) + '<small>' + (p.join(' · ') || '—') + '</small></div>' +
+        (goneD(d[0]) ? '<span class="tag pending">⏳ هيتحذف</span>' : '<button class="mini" data-ed="' + esc(d[0]) + '">✏️</button><button class="mini del" data-dd="' + esc(d[0]) + '">🗑</button>') + '</div>';
+    }).join('');
+    box.innerHTML = '<details open><summary>💵 المصروفات والعهد (' + ms.ents.length + ')</summary>' + (ents || '<div class="empty">مفيش بنود</div>') + '</details>' +
+      '<details><summary>⏱ الأيام المسجلة (' + ms.days.length + ')</summary>' + (days || '<div class="empty">مفيش أيام</div>') + '</details>';
+  }
+  $('#aLists').onclick = (ev) => {
+    const g = (a) => ev.target.getAttribute && ev.target.getAttribute(a);
+    if (!cur || !cur.ms) return;
+    const ex = cur.ex, ms = cur.ms;
+    let id;
+    if ((id = g('data-ee'))) startEdit(ex, ms, id);
+    else if ((id = g('data-de'))) {
+      const e = ms.ents.find((x) => String(x[0]) === id);
+      if (e && confirm('تحذف «' + e[2] + '» ' + fm(e[3]) + ' ؟\n(هيتنفّذ لما الكمبيوتر يفتح)')) {
+        enqueue({ type: 'del_entry', exc: ex.name, date: e[1] || ms.m + '-01', desc: e[2], amount: e[3], data: { entry_id: e[0], expect: [e[1], e[2], e[3]] } });
+        toast('اتبعت أمر الحذف');
+      }
+    } else if ((id = g('data-ed'))) {
+      const d = ms.days.find((x) => x[0] === id);
+      switchTab('day'); $('#dExc').value = ex.name; $('#dDate').value = d[0];
+      $('#dDay').value = d[1] == null ? '' : d[1]; $('#dNight').value = d[2] == null ? '' : d[2]; $('#dDiesel').value = d[3] == null ? '' : d[3]; $('#dNote').value = d[4] || '';
+      toast('عدّل الأرقام واضغط «حفظ اليوم»');
+    } else if ((id = g('data-dd'))) {
+      if (confirm('تحذف يوم ' + id + ' للحفار ' + ex.name + ' ؟\n(هيتنفّذ لما الكمبيوتر يفتح)')) {
+        enqueue({ type: 'del_day', exc: ex.name, date: id }); toast('اتبعت أمر الحذف');
+      }
+    }
+  };
+  function startEdit(ex, ms, id) {
+    const e = ms.ents.find((x) => String(x[0]) === id);
+    if (!e) return;
+    editEnt = { id: e[0], expect: [e[1], e[2], e[3]], month: ms.m, exc: ex.name };
+    switchTab('ent');
+    $('#eExc').value = ex.name; $('#eExc').disabled = true; $('#eDate').value = e[1] || ms.m + '-01';
+    $('#eDesc').value = e[2]; $('#eAmt').value = e[3]; $('#eNote').value = e[4] || '';
+    $('#editBar').classList.remove('hide'); $('#saveEnt').textContent = 'حفظ التعديل';
+  }
+  function endEdit() {
+    editEnt = null; $('#eExc').disabled = false; $('#editBar').classList.add('hide'); $('#saveEnt').textContent = 'حفظ البند';
+    ['#eDesc', '#eAmt', '#eNote'].forEach((s) => { $(s).value = ''; });
+  }
+  $('#cancelEdit').onclick = endEdit;
+
+  // أزرار الإرسال
+  function openUrl(u) { const a = document.createElement('a'); a.href = u; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
+  $('#bWa').onclick = () => { if (cur) openUrl('https://wa.me/?text=' + encodeURIComponent(cur.wa)); };
+  $('#bCopy').onclick = async () => {
+    if (!cur) return;
+    try { await navigator.clipboard.writeText(cur.wa); toast('اتنسخ النص ✔'); return; } catch (e) {}
+    const t = document.createElement('textarea'); t.value = cur.wa; document.body.appendChild(t); t.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (e) {} t.remove();
+    toast(ok ? 'اتنسخ النص ✔' : 'مقدرتش أنسخ — استخدم زرار واتساب', ok ? 'ok' : 'err');
+  };
+  $('#bPrint').onclick = () => {
+    if (!cur) return;
+    const f = document.createElement('iframe');
+    f.style.cssText = 'position:fixed;right:-9999px;top:0;width:210mm;height:297mm;border:0';
+    f.srcdoc = docOf(cur.html);
+    f.onload = () => {
+      try { f.contentWindow.focus(); f.contentWindow.print(); }
+      catch (e) { toast('الطباعة مش متاحة هنا — جرّب «فتح الصفحة» أو واتساب', 'err'); }
+      setTimeout(() => f.remove(), 120000);
+    };
+    document.body.appendChild(f);
+  };
+  $('#bOpen').onclick = () => { if (cur) openUrl(URL.createObjectURL(new Blob([docOf(cur.html)], { type: 'text/html' }))); };
+  ['#aView', '#aExc', '#aMon'].forEach((s) => { $(s).onchange = renderAcc; });
+  $('#aRefresh').onclick = () => { flush(); loadSnap(true); loadMine(); };
+  window.addEventListener('resize', () => { if (!$('#tab-acc').classList.contains('hide')) renderAcc(); });
+
+  // ---------- حفظ يوم
+  $('#saveDay').onclick = () => {
+    const exc = $('#dExc').value, date = $('#dDate').value;
+    const dh = num($('#dDay').value), nh = num($('#dNight').value), ds = num($('#dDiesel').value), note = $('#dNote').value.trim();
+    if (!exc) return toast('اختار الحفار', 'err');
+    if (!date) return toast('اكتب التاريخ', 'err');
+    if ([dh, nh, ds].some((v) => v !== null && (isNaN(v) || v < 0))) return toast('الأرقام لازم تكون صفر أو أكتر', 'err');
+    if ((dh || 0) + (nh || 0) > 24) return toast('نهار + ليل أكتر من 24 ساعة!', 'err');
+    if (dh === null && nh === null && ds === null && !note) return toast('اكتب ساعات أو سولار أو ملاحظة', 'err');
+    LS.set('lastExc', exc);
+    enqueue({ type: 'day', exc: exc, date: date, day_h: dh, night_h: nh, diesel: ds, note: note });
+    ['#dDay', '#dNight', '#dDiesel', '#dNote'].forEach((s) => { $(s).value = ''; });
+    toast('تم الحفظ على التليفون ✔');
+  };
+
+  // ---------- حفظ بند (جديد أو تعديل)
+  $('#saveEnt').onclick = () => {
+    const exc = $('#eExc').value, date = $('#eDate').value, desc = $('#eDesc').value.trim();
+    const amt = num($('#eAmt').value), note = $('#eNote').value.trim();
+    if (!exc) return toast('اختار الحفار', 'err');
+    if (!date) return toast('اكتب التاريخ', 'err');
+    if (!desc) return toast('اكتب البيان', 'err');
+    if (amt === null || isNaN(amt) || amt === 0) return toast('اكتب مبلغ صح', 'err');
+    LS.set('lastExc', exc);
+    if (editEnt) {
+      if (date.slice(0, 7) !== editEnt.month) return toast('التاريخ لازم يفضل في نفس الشهر (' + editEnt.month + ')', 'err');
+      enqueue({ type: 'edit_entry', exc: editEnt.exc, date: date, desc: desc, amount: amt, note: note, data: { entry_id: editEnt.id, expect: editEnt.expect } });
+      endEdit(); toast('اتبع التعديل ✔');
+      return;
+    }
+    enqueue({ type: 'entry', exc: exc, date: date, desc: desc, amount: amt, note: note });
+    ['#eDesc', '#eAmt', '#eNote'].forEach((s) => { $(s).value = ''; });
+    toast('تم الحفظ على التليفون ✔');
+  };
+
+  // ---------- سجلي
+  const ST = { done: ['✔ اتنفّذ على الكمبيوتر', 'done'], pending: ['⏳ مستني الكمبيوتر', 'pending'], rejected: ['⚠ اترفض', 'rejected'], cancelled: ['ملغي', 'local'], local: ['📤 لسه ما اترفعش', 'local'] };
+  const ICON = { day: '⏱', entry: '💵', edit_entry: '✏️', del_entry: '🗑', del_day: '🗑', add_exc: '➕', edit_exc: '⚙', set_terms: '💲' };
+  const nz = (v) => v !== null && v !== undefined && v !== '';
+  function line(i) {
+    const d = pj(i.data);
+    if (i.type === 'entry') return esc(i.desc) + ' — ' + esc(i.amount);
+    if (i.type === 'edit_entry') return 'تعديل بند ← ' + esc(i.desc) + ' — ' + esc(i.amount);
+    if (i.type === 'del_entry') return 'حذف بند: ' + esc(i.desc) + ' — ' + esc(i.amount);
+    if (i.type === 'del_day') return 'حذف يوم';
+    if (i.type === 'add_exc') return 'حفار جديد · سعر ' + esc(d.price);
+    if (i.type === 'edit_exc') return 'تعديل بيانات الحفار · سعر ' + esc(d.price);
+    if (i.type === 'set_terms') return 'سعر ' + esc(d.month) + ' = ' + esc(d.price);
+    const p = [];
+    if (nz(i.day_h)) p.push('نهار ' + i.day_h);
+    if (nz(i.night_h)) p.push('ليل ' + i.night_h);
+    if (nz(i.diesel)) p.push('سولار ' + i.diesel);
+    if (i.note) p.push(esc(i.note));
+    return p.join(' · ') || '—';
+  }
+  function render() {
+    const all = queue.map((i) => Object.assign({}, i, { status: 'local' })).reverse().concat(mine);
+    const box = $('#mineBox');
+    if (!all.length) { box.innerHTML = '<div class="empty">لسه ما سجلتش حاجة</div>'; return; }
+    box.innerHTML = all.map((i) => {
+      const st = ST[i.status] || [i.status, 'local'];
+      const x = (i.status === 'pending' || i.status === 'local') ? '<button class="x" data-cancel="' + esc(i.uid) + '" title="إلغاء">✖</button>' : '';
+      const why = i.status === 'rejected' && i.reason ? '<div class="s" style="color:var(--bad)">' + esc(i.reason) + '</div>' : '';
+      return '<div class="item"><div><div class="t">' + (ICON[i.type] || '•') + ' ' + esc(i.exc) + (i.date ? ' — ' + esc(i.date) : '') + '</div><div class="s">' + line(i) + '</div>' + why +
+        '</div><div style="text-align:left"><span class="tag ' + st[1] + '">' + st[0] + '</span><br>' + x + '</div></div>';
+    }).join('');
+  }
+  async function loadMine() {
+    render();
+    try { const r = await call({ action: 'mine' }); if (r.ok) { mine = r.items; LS.set('mine', mine); render(); renderAcc(); } } catch (e) {}
+  }
+  $('#mineBox').onclick = async (ev) => {
+    const u = ev.target.getAttribute && ev.target.getAttribute('data-cancel');
+    if (!u) return;
+    if (!confirm('تلغي العملية دي؟')) return;
+    if (queue.some((i) => i.uid === u)) { queue = queue.filter((i) => i.uid !== u); LS.set('queue', queue); badge(); render(); renderAcc(); return toast('اتلغت'); }
+    try { const r = await call({ action: 'cancel', uid: u }); toast(r.ok ? 'اتلغت' : (r.error || 'مينفعش'), r.ok ? 'ok' : 'err'); loadMine(); }
+    catch (e) { toast('مفيش نت دلوقتي', 'err'); }
+  };
+  $('#refresh').onclick = () => { flush(); loadMine(); loadMeta(); loadSnap(false); };
+
+  // ---------- تبويب الحفارات
+  function renderExcTab() {
+    const box = $('#excList');
+    if (!snap) { box.innerHTML = '<div class="empty">الحفارات هتظهر بعد أول تحديث من الكمبيوتر</div>'; return; }
+    box.innerHTML = snap.excs.map((e) => '<div class="ln"><div class="tx"><b>' + esc(e.name) + '</b><small>' + (e.driver ? esc(e.driver) + ' · ' : '') + 'السعر ' + fm(e.price) + ' (÷' + e.divisor + ' ÷' + e.hours_day + ')</small></div>' +
+      '<button class="mini" data-xe="' + esc(e.name) + '">✏️</button></div>').join('');
+    prefillTerms();
+  }
+  $('#excList').onclick = (ev) => {
+    const n = ev.target.getAttribute && ev.target.getAttribute('data-xe');
+    if (!n || !snap) return;
+    const e = snap.excs.find((x) => x.name === n);
+    editExc = e.name;
+    $('#xName').value = e.name; $('#xDriver').value = e.driver || ''; $('#xPrice').value = e.price; $('#xDiv').value = e.divisor; $('#xHpd').value = e.hours_day; $('#xNote').value = e.note || '';
+    $('#excFormT').textContent = '✏️ تعديل: ' + e.name; $('#cancelExc').classList.remove('hide');
+    $('#xName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+  function endExc() {
+    editExc = null; $('#excFormT').textContent = '➕ حفار جديد'; $('#cancelExc').classList.add('hide');
+    ['#xName', '#xDriver', '#xPrice', '#xNote'].forEach((s) => { $(s).value = ''; }); $('#xDiv').value = 26; $('#xHpd').value = 8;
+  }
+  $('#cancelExc').onclick = endExc;
+  $('#saveExc').onclick = () => {
+    const name = $('#xName').value.trim(), price = num($('#xPrice').value), div = num($('#xDiv').value), hpd = num($('#xHpd').value);
+    if (!name) return toast('اكتب اسم الحفار', 'err');
+    if (price === null || isNaN(price) || price < 0) return toast('اكتب السعر الشهري صح', 'err');
+    if (!div || isNaN(div) || div <= 0 || !hpd || isNaN(hpd) || hpd <= 0) return toast('القسمة وساعات اليوم لازم أكبر من صفر', 'err');
+    const data = { name: name, driver: $('#xDriver').value.trim(), price: price, divisor: div, hours_day: hpd, note: $('#xNote').value.trim() };
+    if (editExc) enqueue({ type: 'edit_exc', exc: editExc, data: data });
+    else {
+      if (excNames().indexOf(name) >= 0) return toast('فيه حفار بنفس الاسم', 'err');
+      enqueue({ type: 'add_exc', exc: name, data: data });
+    }
+    endExc(); toast('اتبعت للكمبيوتر ✔');
+  };
+  function prefillTerms() {
+    if (!snap) return;
+    const e = snap.excs.find((x) => x.name === $('#tExc').value);
+    if (!e) return;
+    if (!$('#tMon').value) $('#tMon').value = (snap.latest || today().slice(0, 7));
+    const m = e.months.find((x) => x.m === $('#tMon').value);
+    $('#tPrice').value = m ? m.s.price : e.price; $('#tDiv').value = m ? m.s.divisor : e.divisor; $('#tHpd').value = m ? m.s.hours_day : e.hours_day;
+  }
+  $('#tExc').onchange = prefillTerms; $('#tMon').onchange = prefillTerms;
+  $('#saveTerms').onclick = () => {
+    const exc = $('#tExc').value, mon = $('#tMon').value, price = num($('#tPrice').value), div = num($('#tDiv').value), hpd = num($('#tHpd').value);
+    if (!exc) return toast('اختار الحفار', 'err');
+    if (!/^\d{4}-\d{2}$/.test(mon)) return toast('اختار الشهر', 'err');
+    if (price === null || isNaN(price) || price < 0 || !div || div <= 0 || !hpd || hpd <= 0) return toast('راجع الأرقام', 'err');
+    enqueue({ type: 'set_terms', exc: exc, date: mon + '-01', data: { month: mon, price: price, divisor: div, hours_day: hpd } });
+    toast('اتبع للكمبيوتر ✔');
+  };
+
+  // ---------- التبويبات
+  function switchTab(t) {
+    document.querySelectorAll('nav button').forEach((x) => x.classList.toggle('on', x.getAttribute('data-tab') === t));
+    ['acc', 'day', 'ent', 'mine', 'exc'].forEach((k) => $('#tab-' + k).classList.toggle('hide', k !== t));
+    if (t === 'acc') renderAcc();
+    if (t === 'mine') loadMine();
+    if (t === 'exc') renderExcTab();
+    window.scrollTo(0, 0);
+  }
+  document.querySelectorAll('nav button').forEach((b) => { b.onclick = () => switchTab(b.getAttribute('data-tab')); });
+
+  // ---------- المفتاح
+  function needKey(msg) {
+    $('#setup').style.display = 'block'; $('#app').classList.add('hide');
+    if (msg) toast(msg, 'err');
+  }
+  $('#keyGo').onclick = async () => {
+    const k = $('#keyIn').value.trim();
+    if (!k) return toast('اكتب المفتاح', 'err');
+    if (STANDALONE) {
+      const u = $('#urlIn').value.trim();
+      if (!/^https?:\/\//.test(u)) return toast('اكتب رابط السيرفر (بينتهي بـ /exec)', 'err');
+      window.RELAY_URL = u;
+    }
+    KEY = k;
+    try {
+      const r = await call({ action: 'ping' });
+      if (r.ok) { LS.set('key', KEY); if (STANDALONE) LS.set('relayUrl', window.RELAY_URL); $('#setup').style.display = 'none'; start(); }
+      else { KEY = ''; toast(r.error || 'المفتاح غلط', 'err'); }
+    } catch (e) { KEY = ''; toast('مفيش اتصال بالسيرفر — اتأكد من النت', 'err'); }
+  };
+
+  async function start() {
+    $('#app').classList.remove('hide');
+    $('#dDate').value = $('#eDate').value = today();
+    await loadCached();
+    fillExc(); badge(); renderAcc(); renderExcTab();
+    loadMeta(); flush(); loadSnap(false); loadMine();
+  }
+  window.addEventListener('online', () => { badge(); flush(); loadMeta(); loadSnap(false); });
+  window.addEventListener('offline', badge);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { flush(); loadSnap(false); } });
+  setInterval(flush, 30000);
+
+  if (STANDALONE) { $('#urlWrap').style.display = 'block'; $('#urlIn').value = window.RELAY_URL || ''; }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});
+  if (KEY && (!STANDALONE || window.RELAY_URL)) start(); else needKey();
+})();
+
+</script>
+</body>
+</html>
